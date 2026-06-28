@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Upload, MessageSquare, History, User, Settings, Sun } from 'lucide-react'
+import { LayoutDashboard, Upload, MessageSquare, History, User, Settings, LogOut, Sun } from 'lucide-react'
+import { useAuth } from '../AuthContext'
 
 const navItems = [
   { to: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -11,6 +12,21 @@ const navItems = [
 
 export default function DashboardLayout() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login')
+  }
+
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : 'US'
 
   return (
     <div className="flex h-screen bg-[#0a0d14] overflow-hidden">
@@ -52,9 +68,19 @@ export default function DashboardLayout() {
 
         {/* Bottom */}
         <div className="px-3 py-4 border-t border-white/5 space-y-1">
-          <button className="nav-item w-full">
+          <button 
+            onClick={() => navigate('/app/profile')} 
+            className="nav-item w-full text-left"
+          >
             <Settings size={18} />
             Settings
+          </button>
+          <button 
+            onClick={handleLogout} 
+            className="nav-item w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/5"
+          >
+            <LogOut size={18} className="text-red-400" />
+            Sign Out
           </button>
         </div>
       </aside>
@@ -68,8 +94,11 @@ export default function DashboardLayout() {
             <button className="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
               <Sun size={16} className="text-gray-400" />
             </button>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-violet-500/20 cursor-pointer">
-              AM
+            <div 
+              onClick={() => navigate('/app/profile')}
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-violet-500/20 cursor-pointer"
+            >
+              {initials}
             </div>
           </div>
         </header>
@@ -82,3 +111,4 @@ export default function DashboardLayout() {
     </div>
   )
 }
+

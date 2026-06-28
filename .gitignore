@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local database and temp test files
+server/db.json
+server/db.json.tmp
+resume.pdf
+

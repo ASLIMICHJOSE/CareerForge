@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Zap, Shield, Target, MessageSquare, ChevronRight, CheckCircle2, Star, ArrowRight, Sparkles } from 'lucide-react'
+import { useAuth } from '../AuthContext'
 
 const features = [
   {
@@ -60,6 +61,7 @@ const testimonials = [
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   return (
     <div className="min-h-screen grid-bg">
@@ -81,15 +83,31 @@ export default function LandingPage() {
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Features</a>
           <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">How it works</a>
-          <button onClick={() => navigate('/app/dashboard')} className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Dashboard</button>
+          {user && (
+            <button onClick={() => navigate('/app/dashboard')} className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Dashboard</button>
+          )}
         </div>
 
-        <button
-          onClick={() => navigate('/app/analyze')}
-          className="btn-primary text-sm"
-        >
-          Get Started
-        </button>
+        {user ? (
+          <button
+            onClick={() => navigate('/app/dashboard')}
+            className="btn-primary text-sm"
+          >
+            Go to Dashboard
+          </button>
+        ) : (
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/login')} className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
+              Sign In
+            </button>
+            <button
+              onClick={() => navigate('/register')}
+              className="btn-primary text-sm"
+            >
+              Sign Up
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
@@ -120,13 +138,13 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 mt-10">
           <button
             id="hero-analyze-btn"
-            onClick={() => navigate('/app/analyze')}
+            onClick={() => navigate(user ? '/app/analyze' : '/register')}
             className="btn-primary shadow-lg shadow-violet-500/25 text-base px-8 py-4"
           >
             Analyze My Resume <ArrowRight size={18} />
           </button>
           <button
-            onClick={() => navigate('/app/dashboard')}
+            onClick={() => navigate(user ? '/app/dashboard' : '/login')}
             className="btn-secondary text-base px-8 py-4"
           >
             See sample report
@@ -251,7 +269,7 @@ export default function LandingPage() {
               <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">Ready to forge your future?</h2>
               <p className="text-gray-400 text-lg mb-8">Upload your resume in 30 seconds and get your full analysis for free.</p>
               <button
-                onClick={() => navigate('/app/analyze')}
+                onClick={() => navigate(user ? '/app/analyze' : '/register')}
                 className="btn-primary text-lg px-10 py-4 shadow-lg shadow-violet-500/25 mx-auto"
               >
                 Start for free <ArrowRight size={20} />

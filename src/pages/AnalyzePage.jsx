@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, CloudUpload, FileText, Sparkles, X } from 'lucide-react'
+import { api } from '../api'
 
 export default function AnalyzePage() {
   const navigate = useNavigate()
@@ -8,6 +9,7 @@ export default function AnalyzePage() {
   const [file, setFile] = useState(null)
   const [jobDesc, setJobDesc] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const fileRef = useRef()
 
   const handleDrop = (e) => {
@@ -17,13 +19,25 @@ export default function AnalyzePage() {
     if (f) setFile(f)
   }
 
-  const handleAnalyze = () => {
-    if (!file && !jobDesc) return
+  const handleAnalyze = async () => {
+    if (!file || !jobDesc) {
+      setError('Please upload your resume and paste a job description.')
+      return
+    }
+    setError('')
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const formData = new FormData()
+      formData.append('resume', file)
+      formData.append('jobDescription', jobDesc)
+
+      const res = await api.post('/api/analyses/run', formData)
+      navigate('/app/dashboard', { state: { analysisId: res.analysis.id } })
+    } catch (err) {
+      setError(err.message || 'An error occurred while analyzing the resume.')
+    } finally {
       setLoading(false)
-      navigate('/app/dashboard')
-    }, 2000)
+    }
   }
 
   const sampleJobDesc = `Senior Product Designer at Stripe
@@ -55,7 +69,20 @@ Requirements:
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
         {/* Resume upload */}
         <div className="card p-6">
-          <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-4">Your Resume</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Your Resume</p>
+            <button
+              type="button"
+              id="use-sample-resume-btn"
+              onClick={() => {
+                const sampleFile = new File(['mock content'], 'resume_v3.pdf', { type: 'application/pdf' })
+                setFile(sampleFile)
+              }}
+              className="text-xs text-violet-400 hover:text-violet-300 transition-colors font-medium"
+            >
+              Use sample resume
+            </button>
+          </div>
 
           {file ? (
             <div className="border border-white/10 rounded-xl p-6 flex items-center gap-4 bg-white/3">
@@ -124,6 +151,12 @@ Requirements:
           <p className="text-gray-600 text-xs mt-2">{jobDesc.length} characters</p>
         </div>
       </div>
+
+      {error && (
+        <div className="max-w-5xl mx-auto mt-6 bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-400 text-center animate-slide-up">
+          {error}
+        </div>
+      )}
 
       {/* Analyze button */}
       <div className="max-w-5xl mx-auto mt-8 flex justify-center">
